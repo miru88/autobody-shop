@@ -1,5 +1,6 @@
 {
-  "buildCommand": "npx @angular/cli@17 build --configuration production",
+  "buildCommand": "ng build --configuration production",
   "outputDirectory": "dist/autobody-frontend/browser",
-  "framework": null
+  "framework": null,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
