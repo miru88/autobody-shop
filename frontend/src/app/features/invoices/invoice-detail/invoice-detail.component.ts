@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe, CurrencyPipe } from '@angular/common';
+import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -13,7 +13,7 @@ import { Invoice } from '../../../core/models/models';
   selector: 'app-invoice-detail',
   standalone: true,
   imports: [
-    RouterLink, DatePipe, CurrencyPipe,
+    RouterLink, DatePipe, CurrencyPipe, TitleCasePipe,
     MatButtonModule, MatIconModule, MatProgressSpinnerModule,
     MatSnackBarModule, MatDividerModule,
   ],
