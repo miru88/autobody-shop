@@ -43,6 +43,22 @@ If the frontend is hitting `localhost` in production, Vercel is likely building 
 - Go to Vercel → Settings → Build Command → set to `ng build --configuration production`
 - Or hardcode the API URL in `environment.ts` as a temporary fix
 
+### angular.json must include fileReplacements for environment swapping to work
+`ng build --configuration production` does NOT automatically swap `environment.ts` for `environment.prod.ts`. You must explicitly declare the replacement in `angular.json` or Angular will always bundle the dev environment regardless of build configuration.
+
+Always include this in the `production` configuration block in `angular.json`:
+```json
+"production": {
+  "fileReplacements": [
+    {
+      "replace": "src/environments/environment.ts",
+      "with": "src/environments/environment.prod.ts"
+    }
+  ]
+}
+```
+This is generated automatically by `ng new` but must be added manually when writing `angular.json` by hand. Without it, the production API URL will never be used no matter what build command you run.
+
 ---
 
 ## NestJS / Backend
