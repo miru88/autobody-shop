@@ -161,7 +161,7 @@ import { Job, JOB_STATUSES, JobStatus } from '../../core/models/models';
                   <div class="flex items-center justify-between px-4 py-3 bg-white/5">
                     <span class="font-mono text-indigo-400 font-medium">{{ inv.invoice_number }}</span>
                     <span class="px-2 py-1 rounded-full text-xs font-medium status-{{ inv.status }}">
-                      {{ inv.status | titlecase }}
+                      {{ inv.status  }}
                     </span>
                   </div>
                   @for (item of inv.line_items; track item.id) {
