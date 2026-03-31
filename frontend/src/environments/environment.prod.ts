@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-backend.railway.app',
+  apiUrl: 'https://autobody-shop-production.up.railway.app',
 };
