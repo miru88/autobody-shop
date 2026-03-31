@@ -189,7 +189,7 @@ import { Job, JOB_STATUSES, JobStatus } from '../../core/models/models';
           <!-- Footer -->
           <div class="text-center mt-10 text-slate-600 text-sm">
             <p>Questions? Call us on <a href="tel:02012345678" class="text-slate-400">020 1234 5678</a></p>
-            <p class="mt-1">or email <a href="mailto:info@autobodyshop.co.uk" class="text-slate-400">info@autobodyshop.co.uk</a></p>
+            <p class="mt-1">or email <a href="mailto:info@autobodyshop.co.uk" class="text-slate-400">info&#64;autobodyshop.co.uk</a></p>
           </div>
         }
       </div>
