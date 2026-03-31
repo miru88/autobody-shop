@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npx @angular/cli@17 build --configuration production",
+  "outputDirectory": "dist/autobody-frontend/browser",
+  "framework": null
+}
