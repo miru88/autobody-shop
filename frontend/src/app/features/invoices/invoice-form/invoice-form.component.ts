@@ -67,7 +67,7 @@ interface LineItemRow {
             <div class="col-span-1"></div>
           </div>
 
-          @for (item of lineItems(); track $index; let i = $index) {
+          @for (item of lineItems(); track item; let i = $index) {
             <div class="grid grid-cols-12 gap-2 mb-2 items-center">
               <mat-form-field appearance="outline" class="col-span-6">
                 <input matInput placeholder="Description"
