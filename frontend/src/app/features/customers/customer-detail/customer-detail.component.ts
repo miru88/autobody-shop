@@ -103,7 +103,8 @@ import { Customer, JOB_STATUSES, JobStatus, NotificationChannel } from '../../..
                 </div>
               }
 
-              <button mat-stroked-button class="mt-2">
+              <button mat-stroked-button class="mt-2"
+                      [routerLink]="['/customers', customer()!.id, 'vehicles', 'new']">
                 <mat-icon>add</mat-icon> Add Vehicle
               </button>
             </div>

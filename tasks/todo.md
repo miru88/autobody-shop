@@ -1,26 +1,13 @@
 # Task Tracker
 
 ## In Progress
-
-### Customer Notifications Feature (WhatsApp / SMS / Email)
-- [ ] Add `preferred_channel` to Customer entity + `JobUpdate` entity
-- [ ] Install `twilio` and `resend` packages
-- [ ] Create backend updates module (service, controller, notification service)
-- [ ] Register updates module in `app.module.ts`
-- [ ] Update customer DTO + `schema.sql`
-- [ ] Add env vars to `.env.development`
-- [ ] Add `JobUpdate` interface + `preferred_channel` to frontend models
-- [ ] Create frontend updates service
-- [ ] Add Updates tab to job-detail component
-- [ ] Add `preferred_channel` to customer form
+_Nothing currently in progress_
 
 ---
 
 ## Up Next
 
 ### High Priority
-- [ ] **New Job Form** — frontend form to create a job (customer selector, vehicle selector, description, dates)
-- [ ] **New Customer Form** — frontend form to create a customer (name, email, phone, address)
 - [ ] **New Vehicle Form** — add vehicle to a customer from customer detail page
 
 ### Medium Priority
@@ -46,3 +33,6 @@
 - [x] Deploy backend to Railway
 - [x] Deploy frontend to Vercel
 - [x] Connect frontend to backend (CORS, environment URLs)
+- [x] Customer notifications (email via Resend, SMS + WhatsApp via Twilio)
+- [x] New Job Form
+- [x] New Customer Form

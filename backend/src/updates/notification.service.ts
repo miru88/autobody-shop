@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
-import * as twilio from 'twilio';
+import { Twilio } from 'twilio';
 import { NotificationChannel } from '../entities';
 
 export interface NotificationPayload {
@@ -16,14 +16,22 @@ export interface NotificationPayload {
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
   private resend: Resend;
-  private twilio: twilio.Twilio;
+  private _twilio: Twilio | null = null;
 
   constructor(private config: ConfigService) {
     this.resend = new Resend(config.get('RESEND_API_KEY'));
-    this.twilio = twilio.default(
-      config.get('TWILIO_ACCOUNT_SID'),
-      config.get('TWILIO_AUTH_TOKEN'),
-    );
+  }
+
+  private getTwilio(): Twilio {
+    if (!this._twilio) {
+      const sid = this.config.get('TWILIO_ACCOUNT_SID');
+      const token = this.config.get('TWILIO_AUTH_TOKEN');
+      if (!sid || !token || sid === 'your-account-sid') {
+        throw new Error('Twilio credentials are not configured');
+      }
+      this._twilio = new Twilio(sid, token);
+    }
+    return this._twilio;
   }
 
   async send(payload: NotificationPayload): Promise<void> {
@@ -63,7 +71,7 @@ export class NotificationService {
       this.logger.warn('SMS channel selected but customer has no phone');
       return;
     }
-    await this.twilio.messages.create({
+    await this.getTwilio().messages.create({
       body: `Hi ${payload.customer_name}, ${payload.message}`,
       from: this.config.get('TWILIO_FROM_NUMBER'),
       to: payload.to_phone,
@@ -76,7 +84,7 @@ export class NotificationService {
       this.logger.warn('WhatsApp channel selected but customer has no phone');
       return;
     }
-    await this.twilio.messages.create({
+    await this.getTwilio().messages.create({
       body: `Hi ${payload.customer_name}, ${payload.message}`,
       from: `whatsapp:${this.config.get('TWILIO_WHATSAPP_NUMBER')}`,
       to: `whatsapp:${payload.to_phone}`,

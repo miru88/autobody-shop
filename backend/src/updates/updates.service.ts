@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IsString, IsOptional, IsArray, IsUUID } from 'class-validator';
@@ -12,6 +12,8 @@ export class CreateUpdateDto {
 
 @Injectable()
 export class UpdatesService {
+  private readonly logger = new Logger(UpdatesService.name);
+
   constructor(
     @InjectRepository(JobUpdate) private updatesRepo: Repository<JobUpdate>,
     @InjectRepository(Job) private jobsRepo: Repository<Job>,
@@ -44,13 +46,19 @@ export class UpdatesService {
 
     const saved = await this.updatesRepo.save(update);
 
-    await this.notificationSvc.send({
-      channel: customer.preferred_channel,
-      to_email: customer.email,
-      to_phone: customer.phone,
-      customer_name: customer.name,
-      message: dto.message,
-    });
+    try {
+      await this.notificationSvc.send({
+        channel: customer.preferred_channel,
+        to_email: customer.email,
+        to_phone: customer.phone,
+        customer_name: customer.name,
+        message: dto.message,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Notification failed for update ${saved.id} via ${customer.preferred_channel}: ${err.message}`,
+      );
+    }
 
     return saved;
   }
