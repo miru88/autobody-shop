@@ -42,3 +42,4 @@ backend/dist/
 
 # Test coverage
 coverage/
+backend/.env.development

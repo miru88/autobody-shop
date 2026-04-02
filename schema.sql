@@ -14,6 +14,14 @@ CREATE TABLE users (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- ── Seed data ─────────────────────────────────────────────────────────────────
+INSERT INTO users (email, password_hash, name, role) VALUES (
+  'email@email.com',
+  '$2b$10$cclme6VaAK/4fyKj4/9.eeoH7uRKkxsb9Y5zeizfM7iIw4/hx6UFq',
+  'ggutierrez',
+  'owner'
+) ON CONFLICT (email) DO NOTHING;
+
 -- ── Customers ─────────────────────────────────────────────────────────────────
 CREATE TABLE customers (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -96,7 +104,17 @@ CREATE TABLE invoice_line_items (
   description TEXT NOT NULL,
   quantity    NUMERIC(10,2) NOT NULL,
   unit_price  NUMERIC(10,2) NOT NULL,
-  line_total  NUMERIC(10,2) GENERATED ALWAYS AS (quantity * unit_price) STORED
+  line_total  NUMERIC(10,2) NOT NULL
+);
+
+-- ── TypeORM internal metadata ─────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS typeorm_metadata (
+  type     VARCHAR NOT NULL,
+  database VARCHAR,
+  schema   VARCHAR,
+  "table"  VARCHAR,
+  name     VARCHAR,
+  value    TEXT
 );
 
 -- ── updated_at trigger ────────────────────────────────────────────────────────
