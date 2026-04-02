@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -8,13 +8,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CustomersService } from '../../../core/services/customers.service';
-import { Customer, JOB_STATUSES, JobStatus } from '../../../core/models/models';
+import { Customer, JOB_STATUSES, JobStatus, NotificationChannel } from '../../../core/models/models';
 
 @Component({
   selector: 'app-customer-detail',
   standalone: true,
   imports: [
-    RouterLink, DatePipe,
+    RouterLink, DatePipe, TitleCasePipe,
     MatButtonModule, MatIconModule, MatTabsModule,
     MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule,
   ],
@@ -53,6 +53,10 @@ import { Customer, JOB_STATUSES, JobStatus } from '../../../core/models/models';
                     {{ customer()!.address }}
                   </span>
                 }
+                <span class="flex items-center gap-1 text-slate-400 text-sm">
+                  <mat-icon class="!text-sm">{{ channelIcon(customer()!.preferred_channel) }}</mat-icon>
+                  {{ customer()!.preferred_channel | titlecase }}
+                </span>
               </div>
             </div>
             <div class="flex gap-2">
@@ -170,5 +174,14 @@ export class CustomerDetailComponent implements OnInit {
 
   labelFor(status: JobStatus) {
     return JOB_STATUSES.find((s) => s.value === status)?.label ?? status;
+  }
+
+  channelIcon(channel: NotificationChannel): string {
+    const icons: Record<NotificationChannel, string> = {
+      email: 'email',
+      sms: 'sms',
+      whatsapp: 'chat',
+    };
+    return icons[channel] ?? 'send';
   }
 }

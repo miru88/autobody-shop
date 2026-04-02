@@ -6,16 +6,30 @@ export interface User {
   created_at: string;
 }
 
+export type NotificationChannel = 'email' | 'sms' | 'whatsapp';
+
 export interface Customer {
   id: string;
   name: string;
   email?: string;
   phone?: string;
   address?: string;
+  preferred_channel: NotificationChannel;
   created_at: string;
   updated_at: string;
   vehicles?: Vehicle[];
   jobs?: Job[];
+}
+
+export interface JobUpdate {
+  id: string;
+  job_id: string;
+  customer_id: string;
+  message: string;
+  photo_ids: string[];
+  channel_used: NotificationChannel;
+  sent_by?: string;
+  sent_at: string;
 }
 
 export interface Vehicle {

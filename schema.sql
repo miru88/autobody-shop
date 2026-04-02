@@ -28,9 +28,11 @@ CREATE TABLE customers (
   name       TEXT NOT NULL,
   email      TEXT,
   phone      TEXT,
-  address    TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  address           TEXT,
+  preferred_channel TEXT NOT NULL DEFAULT 'email'
+                      CHECK (preferred_channel IN ('email', 'sms', 'whatsapp')),
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── Vehicles ──────────────────────────────────────────────────────────────────
@@ -106,6 +108,20 @@ CREATE TABLE invoice_line_items (
   unit_price  NUMERIC(10,2) NOT NULL,
   line_total  NUMERIC(10,2) NOT NULL
 );
+
+-- ── Job Updates ───────────────────────────────────────────────────────────────
+CREATE TABLE job_updates (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  job_id       UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+  customer_id  UUID NOT NULL REFERENCES customers(id),
+  message      TEXT NOT NULL,
+  photo_ids    UUID[] NOT NULL DEFAULT '{}',
+  channel_used TEXT NOT NULL CHECK (channel_used IN ('email', 'sms', 'whatsapp')),
+  sent_by      UUID REFERENCES users(id),
+  sent_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_job_updates_job_id ON job_updates(job_id);
 
 -- ── TypeORM internal metadata ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS typeorm_metadata (

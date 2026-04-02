@@ -39,6 +39,8 @@ export class User {
 
 // ─── Customer ─────────────────────────────────────────────────────────────────
 
+export type NotificationChannel = 'email' | 'sms' | 'whatsapp';
+
 @Entity('customers')
 export class Customer {
   @PrimaryGeneratedColumn('uuid')
@@ -56,6 +58,9 @@ export class Customer {
   @Column({ nullable: true })
   address: string;
 
+  @Column({ default: 'email' })
+  preferred_channel: NotificationChannel;
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -67,6 +72,9 @@ export class Customer {
 
   @OneToMany(() => Job, (j) => j.customer)
   jobs: Job[];
+
+  @OneToMany(() => JobUpdate, (u) => u.customer)
+  updates: JobUpdate[];
 }
 
 // ─── Vehicle ──────────────────────────────────────────────────────────────────
@@ -170,6 +178,9 @@ export class Job {
 
   @OneToMany(() => Invoice, (i) => i.job)
   invoices: Invoice[];
+
+  @OneToMany(() => JobUpdate, (u) => u.job)
+  updates: JobUpdate[];
 
   @BeforeInsert()
   generateToken() {
@@ -275,6 +286,43 @@ export class Invoice {
 
   @OneToMany(() => InvoiceLineItem, (li) => li.invoice, { cascade: true })
   line_items: InvoiceLineItem[];
+}
+
+// ─── JobUpdate ────────────────────────────────────────────────────────────────
+
+@Entity('job_updates')
+export class JobUpdate {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne(() => Job, (j) => j.updates, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'job_id' })
+  job: Job;
+
+  @Column()
+  job_id: string;
+
+  @ManyToOne(() => Customer, (c) => c.updates)
+  @JoinColumn({ name: 'customer_id' })
+  customer: Customer;
+
+  @Column()
+  customer_id: string;
+
+  @Column('text')
+  message: string;
+
+  @Column('uuid', { array: true, default: [] })
+  photo_ids: string[];
+
+  @Column()
+  channel_used: NotificationChannel;
+
+  @Column({ nullable: true })
+  sent_by: string;
+
+  @CreateDateColumn()
+  sent_at: Date;
 }
 
 // ─── InvoiceLineItem ──────────────────────────────────────────────────────────

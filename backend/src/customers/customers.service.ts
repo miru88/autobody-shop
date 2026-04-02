@@ -9,6 +9,7 @@ export class CreateCustomerDto {
   @IsOptional() @IsEmail() email?: string;
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() address?: string;
+  @IsOptional() @IsString() preferred_channel?: 'email' | 'sms' | 'whatsapp';
 }
 
 export class CreateVehicleDto {

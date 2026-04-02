@@ -6,14 +6,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTabsModule } from '@angular/material/tabs';
 import { JobsService } from '../../../core/services/jobs.service';
 import { PhotosService } from '../../../core/services/photos.service';
-import { Job, JobStatus, JOB_STATUSES, Photo } from '../../../core/models/models';
+import { UpdatesService } from '../../../core/services/updates.service';
+import { Job, JobStatus, JOB_STATUSES, Photo, JobUpdate } from '../../../core/models/models';
 
 @Component({
   selector: 'app-job-detail',
@@ -21,8 +24,8 @@ import { Job, JobStatus, JOB_STATUSES, Photo } from '../../../core/models/models
   imports: [
     RouterLink, FormsModule, DatePipe,
     MatButtonModule, MatIconModule, MatSelectModule, MatFormFieldModule,
-    MatProgressSpinnerModule, MatSnackBarModule, MatTooltipModule,
-    MatChipsModule, MatDialogModule,
+    MatInputModule, MatProgressSpinnerModule, MatSnackBarModule, MatTooltipModule,
+    MatChipsModule, MatDialogModule, MatTabsModule,
   ],
   template: `
     @if (loading()) {
@@ -122,79 +125,157 @@ import { Job, JobStatus, JOB_STATUSES, Photo } from '../../../core/models/models
             }
           </div>
 
-          <!-- Right: Photos -->
-          <div class="lg:col-span-2 space-y-4">
-            <div class="app-card">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-white">
-                  Progress Photos
-                  <span class="text-slate-400 font-normal ml-1">({{ photos().length }})</span>
-                </h3>
-                <!-- Upload zone -->
-                <label class="cursor-pointer">
-                  <input type="file" multiple accept="image/*" class="hidden"
-                         (change)="onFileSelect($event)" />
-                  <span mat-stroked-button class="mat-stroked-button mat-button-base px-3 py-1 text-sm
-                        border border-white/20 rounded text-slate-300 hover:bg-white/5 cursor-pointer">
-                    <mat-icon class="!text-base align-middle mr-1">upload</mat-icon>
-                    Upload
-                  </span>
-                </label>
-              </div>
+          <!-- Right: Tabs -->
+          <div class="lg:col-span-2">
+            <mat-tab-group animationDuration="0ms" class="app-tabs">
 
-              <!-- Drop zone -->
-              <div class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center mb-4
-                          hover:border-indigo-500/40 transition-colors cursor-pointer"
-                   (dragover)="$event.preventDefault()"
-                   (drop)="onDrop($event)">
-                <mat-icon class="!text-3xl text-slate-600 block mb-2">add_photo_alternate</mat-icon>
-                <p class="text-slate-500 text-sm">Drop photos here or click Upload above</p>
-              </div>
+              <!-- Photos tab -->
+              <mat-tab label="Photos">
+                <div class="app-card mt-4">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-white">
+                      Progress Photos
+                      <span class="text-slate-400 font-normal ml-1">({{ photos().length }})</span>
+                    </h3>
+                    <label class="cursor-pointer">
+                      <input type="file" multiple accept="image/*" class="hidden"
+                             (change)="onFileSelect($event)" />
+                      <span mat-stroked-button class="mat-stroked-button mat-button-base px-3 py-1 text-sm
+                            border border-white/20 rounded text-slate-300 hover:bg-white/5 cursor-pointer">
+                        <mat-icon class="!text-base align-middle mr-1">upload</mat-icon>
+                        Upload
+                      </span>
+                    </label>
+                  </div>
 
-              @if (uploading()) {
-                <div class="flex items-center gap-3 text-slate-400 text-sm mb-4">
-                  <mat-spinner diameter="16" />
-                  Uploading...
-                </div>
-              }
+                  <div class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center mb-4
+                              hover:border-indigo-500/40 transition-colors cursor-pointer"
+                       (dragover)="$event.preventDefault()"
+                       (drop)="onDrop($event)">
+                    <mat-icon class="!text-3xl text-slate-600 block mb-2">add_photo_alternate</mat-icon>
+                    <p class="text-slate-500 text-sm">Drop photos here or click Upload above</p>
+                  </div>
 
-              <!-- Photo grid -->
-              @if (photos().length > 0) {
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  @for (photo of photos(); track photo.id) {
-                    <div class="relative group rounded-lg overflow-hidden bg-slate-800 aspect-square">
-                      <img [src]="photo.url" [alt]="photo.caption || 'Photo'"
-                           class="w-full h-full object-cover" />
+                  @if (uploading()) {
+                    <div class="flex items-center gap-3 text-slate-400 text-sm mb-4">
+                      <mat-spinner diameter="16" />
+                      Uploading...
+                    </div>
+                  }
 
-                      <!-- Overlay -->
-                      <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100
-                                  transition-opacity flex flex-col justify-between p-2">
-                        <div class="flex justify-end">
-                          <button mat-icon-button class="!w-7 !h-7"
-                                  (click)="toggleVisibility(photo)"
-                                  [matTooltip]="photo.visible_to_customer ? 'Hide from customer' : 'Show to customer'">
-                            <mat-icon class="!text-sm"
-                                      [class]="photo.visible_to_customer ? 'text-green-400' : 'text-slate-400'">
-                              {{ photo.visible_to_customer ? 'visibility' : 'visibility_off' }}
-                            </mat-icon>
-                          </button>
-                        </div>
-                        <div>
-                          @if (photo.caption) {
-                            <p class="text-white text-xs truncate">{{ photo.caption }}</p>
+                  @if (photos().length > 0) {
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      @for (photo of photos(); track photo.id) {
+                        <div class="relative group rounded-lg overflow-hidden bg-slate-800 aspect-square">
+                          <img [src]="photo.url" [alt]="photo.caption || 'Photo'"
+                               class="w-full h-full object-cover" />
+                          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100
+                                      transition-opacity flex flex-col justify-between p-2">
+                            <div class="flex justify-end">
+                              <button mat-icon-button class="!w-7 !h-7"
+                                      (click)="toggleVisibility(photo)"
+                                      [matTooltip]="photo.visible_to_customer ? 'Hide from customer' : 'Show to customer'">
+                                <mat-icon class="!text-sm"
+                                          [class]="photo.visible_to_customer ? 'text-green-400' : 'text-slate-400'">
+                                  {{ photo.visible_to_customer ? 'visibility' : 'visibility_off' }}
+                                </mat-icon>
+                              </button>
+                            </div>
+                            <div>
+                              @if (photo.caption) {
+                                <p class="text-white text-xs truncate">{{ photo.caption }}</p>
+                              }
+                            </div>
+                          </div>
+                          @if (photo.visible_to_customer) {
+                            <div class="absolute top-1 left-1 w-2 h-2 rounded-full bg-green-400"></div>
                           }
                         </div>
-                      </div>
-
-                      <!-- Visibility badge -->
-                      @if (photo.visible_to_customer) {
-                        <div class="absolute top-1 left-1 w-2 h-2 rounded-full bg-green-400"></div>
                       }
                     </div>
                   }
                 </div>
-              }
-            </div>
+              </mat-tab>
+
+              <!-- Updates tab -->
+              <mat-tab label="Updates">
+                <div class="app-card mt-4 space-y-4">
+
+                  <!-- Compose -->
+                  <div class="space-y-3">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Message to customer</mat-label>
+                      <textarea matInput rows="3" [(ngModel)]="updateMessage"
+                                placeholder="e.g. Your car is in the paint booth and looking great!">
+                      </textarea>
+                    </mat-form-field>
+
+                    <!-- Visible photos picker -->
+                    @if (visiblePhotos().length > 0) {
+                      <div>
+                        <p class="text-xs text-slate-400 mb-2">Attach photos (visible to customer)</p>
+                        <div class="flex flex-wrap gap-2">
+                          @for (photo of visiblePhotos(); track photo.id) {
+                            <div class="relative cursor-pointer rounded overflow-hidden w-14 h-14 flex-shrink-0"
+                                 (click)="togglePhotoSelection(photo.id)"
+                                 [class]="selectedPhotoIds().includes(photo.id)
+                                   ? 'ring-2 ring-indigo-500'
+                                   : 'opacity-50'">
+                              <img [src]="photo.url" class="w-full h-full object-cover" />
+                              @if (selectedPhotoIds().includes(photo.id)) {
+                                <div class="absolute inset-0 bg-indigo-600/30 flex items-center justify-center">
+                                  <mat-icon class="!text-sm text-white">check</mat-icon>
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <div class="flex justify-end">
+                      <button mat-flat-button color="primary"
+                              [disabled]="!updateMessage.trim() || sendingUpdate()"
+                              (click)="sendUpdate()">
+                        @if (sendingUpdate()) {
+                          <mat-spinner diameter="16" class="mr-2" />
+                        }
+                        Send Update
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- History -->
+                  @if (updates().length > 0) {
+                    <div class="border-t border-white/10 pt-4 space-y-3">
+                      @for (update of updates(); track update.id) {
+                        <div class="bg-slate-800/50 rounded-lg p-3">
+                          <div class="flex items-center gap-2 mb-1">
+                            <mat-icon class="!text-sm text-slate-400">
+                              {{ channelIcon(update.channel_used) }}
+                            </mat-icon>
+                            <span class="text-xs text-slate-400 capitalize">{{ update.channel_used }}</span>
+                            <span class="text-xs text-slate-600 ml-auto">
+                              {{ update.sent_at | date:'dd MMM yyyy, HH:mm' }}
+                            </span>
+                          </div>
+                          <p class="text-sm text-slate-200">{{ update.message }}</p>
+                          @if (update.photo_ids.length > 0) {
+                            <p class="text-xs text-slate-500 mt-1">
+                              {{ update.photo_ids.length }} photo(s) attached
+                            </p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-slate-500 text-sm text-center py-4">No updates sent yet</p>
+                  }
+
+                </div>
+              </mat-tab>
+
+            </mat-tab-group>
           </div>
         </div>
       </div>
@@ -202,19 +283,25 @@ import { Job, JobStatus, JOB_STATUSES, Photo } from '../../../core/models/models
   `,
 })
 export class JobDetailComponent implements OnInit {
-  private route  = inject(ActivatedRoute);
-  private jobSvc = inject(JobsService);
-  private phoSvc = inject(PhotosService);
-  private snack  = inject(MatSnackBar);
+  private route      = inject(ActivatedRoute);
+  private jobSvc     = inject(JobsService);
+  private phoSvc     = inject(PhotosService);
+  private updatesSvc = inject(UpdatesService);
+  private snack      = inject(MatSnackBar);
 
-  job            = signal<Job | null>(null);
-  photos         = signal<Photo[]>([]);
-  loading        = signal(true);
-  uploading      = signal(false);
-  selectedStatus = signal<JobStatus>('received');
-  statuses       = JOB_STATUSES;
+  job              = signal<Job | null>(null);
+  photos           = signal<Photo[]>([]);
+  updates          = signal<JobUpdate[]>([]);
+  loading          = signal(true);
+  uploading        = signal(false);
+  sendingUpdate    = signal(false);
+  selectedStatus   = signal<JobStatus>('received');
+  selectedPhotoIds = signal<string[]>([]);
+  updateMessage    = '';
+  statuses         = JOB_STATUSES;
+  statusOrder      = JOB_STATUSES.map((s) => s.value);
 
-  statusOrder = JOB_STATUSES.map((s) => s.value);
+  visiblePhotos = () => this.photos().filter((p) => p.visible_to_customer);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -224,6 +311,7 @@ export class JobDetailComponent implements OnInit {
       this.photos.set(job.photos ?? []);
       this.loading.set(false);
     });
+    this.updatesSvc.getAll(id).subscribe((updates) => this.updates.set(updates));
   }
 
   isCompleted(status: JobStatus) {
@@ -279,5 +367,38 @@ export class JobDetailComponent implements OnInit {
         list.map((p) => (p.id === updated.id ? updated : p)),
       );
     });
+  }
+
+  togglePhotoSelection(photoId: string) {
+    this.selectedPhotoIds.update((ids) =>
+      ids.includes(photoId) ? ids.filter((id) => id !== photoId) : [...ids, photoId],
+    );
+  }
+
+  sendUpdate() {
+    if (!this.updateMessage.trim()) return;
+    this.sendingUpdate.set(true);
+    this.updatesSvc.send(this.job()!.id, this.updateMessage, this.selectedPhotoIds()).subscribe({
+      next: (update) => {
+        this.updates.update((list) => [update, ...list]);
+        this.updateMessage = '';
+        this.selectedPhotoIds.set([]);
+        this.sendingUpdate.set(false);
+        this.snack.open('Update sent', '', { duration: 2000 });
+      },
+      error: () => {
+        this.sendingUpdate.set(false);
+        this.snack.open('Failed to send update', '', { duration: 3000 });
+      },
+    });
+  }
+
+  channelIcon(channel: string): string {
+    const icons: Record<string, string> = {
+      email: 'email',
+      sms: 'sms',
+      whatsapp: 'chat',
+    };
+    return icons[channel] ?? 'send';
   }
 }
